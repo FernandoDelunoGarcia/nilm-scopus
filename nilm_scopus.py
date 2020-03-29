@@ -22,12 +22,21 @@ class Utils:
         self.max_papers = 100
         self.max_keywords = 100
 
+        self.column_authors = 'Authors'
+        self.column_title = 'Title'
+        self.column_year = 'Year'
+        self.column_citations = 'Cited by'
+        self.column_ikeywords = 'Index Keywords'
+        
+
 
 utils = Utils()
 
 @st.cache
 def LoadDataset(filename):
     df=pd.read_csv(filename)
+    df[utils.column_citations] = df[utils.column_citations].fillna(0)
+    df = df.sort_values(by=utils.column_citations, ascending=False)
     return df
 
 def getPublicationsByYear(df, from_date, to_date):
@@ -41,15 +50,14 @@ def EvaluatePublicationsPerYear(df):
     return publications_per_year
 
 def EvaluatePaperCitations(df):
-    first_author = [x.split(',')[0] for x in df['Authors']]
-    paper_year = [str(x) for x in df['Year']] 
+    first_author = [x.split(',')[0] for x in df[utils.column_authors]]
+    paper_year = [str(x) for x in df[utils.column_year]] 
     paper = ["{0}, {1}".format(author,year) for (author,year) in zip(first_author, paper_year)]
-    citations_per_paper = pd.DataFrame({'Paper' : paper, 'Count' : df['Cited by'].values, 'Title' : df['Title'].values})
-    citations_per_paper = citations_per_paper.sort_values(by='Count', ascending=False)
+    citations_per_paper = pd.DataFrame({'Paper' : paper, 'Count' : df[utils.column_citations].values, 'Title' : df[utils.column_title].values})
     return citations_per_paper
 
 def EvaluateIndexKeywords(df):
-    keywords = [str(x).split(';') for x in df['Index Keywords']]
+    keywords = [str(x).split(';') for x in df[utils.column_ikeywords]]
     keywords_list = list(itertools.chain.from_iterable(keywords))
     keywords_list = [s.lower() for s in keywords_list]
 
@@ -57,7 +65,6 @@ def EvaluateIndexKeywords(df):
     index_keywords.columns = ['Keywords']
     index_keywords['Count'] = 1
     index_keywords = index_keywords.groupby('Keywords').count().sort_values(by='Count', ascending=False).reset_index()
-    index_keywords = index_keywords.dropna(how='all')
     return index_keywords
 
 
@@ -87,7 +94,7 @@ if __name__ == "__main__":
     st.title("NILM Papers")
 
     st.sidebar.title("About")
-    st.sidebar.info("This is ...")
+    st.sidebar.info("A tool to investigate publications that have cited **Nonintrusive Appliance Load Monitoring**, Hart G.W. (1992).")
 
     st.sidebar.title("Dataset")
     filename = st.sidebar.selectbox("Dataset choices", utils.dts_list, 0)
@@ -107,7 +114,10 @@ if __name__ == "__main__":
     publications = getPublicationsByYear(df, min_year_to_filter, max_year_to_filter)
 
     if publications.shape[0] > 0:
-        st.write(publications)
+    
+        st.markdown("{0} documents have cited: ".format(publications.shape[0]) + "**Nonintrusive Appliance Load Monitoring**.")
+    
+        st.write(publications[[utils.column_authors, utils.column_year, utils.column_title, utils.column_citations]])
 
         history = EvaluatePublicationsPerYear(publications)
         history_fig = PlotPublicationsPerYear(history)
