@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import glob2
 import datetime
 import itertools
+import sys
+import os
 
 class Utils:
     def __init__(self):
@@ -91,7 +93,7 @@ if __name__ == "__main__":
     filename = st.sidebar.selectbox("Dataset choices", utils.dts_list, 0)
 
     st.sidebar.title("Date Range")
-    year_to_filter = st.sidebar.slider('Year', utils.min_year, utils.max_year, utils.max_year)
+    min_year_to_filter, max_year_to_filter = st.sidebar.slider('Year', utils.min_year, utils.max_year, (utils.min_year, utils.max_year), 1)
 
     st.sidebar.title("Most Cited Papers")
     papers_to_filter = st.sidebar.slider('Papers', 1, utils.max_papers, utils.max_papers)
@@ -99,10 +101,10 @@ if __name__ == "__main__":
     st.sidebar.title("Most Popular Keywords")
     keywords_to_filter = st.sidebar.slider('Top', 1, utils.max_keywords, utils.max_keywords)
 
-
+    export_images_pressed = st.sidebar.button('Export Images')
 
     df = LoadDataset(filename)
-    publications = getPublicationsByYear(df, utils.min_year, year_to_filter)
+    publications = getPublicationsByYear(df, min_year_to_filter, max_year_to_filter)
 
     if publications.shape[0] > 0:
         st.write(publications)
@@ -118,3 +120,13 @@ if __name__ == "__main__":
         index_keywords = EvaluateIndexKeywords(publications)
         index_keywords_fig = PlotIndexKeywords(index_keywords.iloc[0:keywords_to_filter])
         st.write(index_keywords_fig)
+
+        if export_images_pressed:
+            path = './outputs/'
+            if os.path.exists(path):
+                suffix = str(min_year_to_filter) + '_' + str(max_year_to_filter) + ".svg"
+                history_fig.write_image(path + 'publications_' + suffix)
+                most_cited_papers_fig.write_image(path + 'mostcited_' + suffix)
+                index_keywords_fig.write_image(path + 'topkeywords_' + suffix)
+            else:
+                raise "Invalid path"
