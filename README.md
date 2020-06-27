@@ -2,7 +2,7 @@
 
 ```sh
 git clone https://gitlab.com/fernando.delunogarcia/nilm-scopus.git
-mkdir nilm-scopus.git/outputs
+mkdir nilm-scopus/outputs
 ```
 
 
