@@ -1,8 +1,8 @@
 ## Repository
 
 ```sh
-git clone https://gitlab.com/fernando.delunogarcia/nilm-scopus.git
-mkdir nilm-scopus.git/outputs
+git clone https://github.com/FernandoDelunoGarcia/nilm-scopus.git
+mkdir nilm-scopus/outputs
 ```
 
 
