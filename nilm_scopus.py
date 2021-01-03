@@ -63,6 +63,7 @@ def EvaluateIndexKeywords(df):
 
     index_keywords = pd.DataFrame(keywords_list)
     index_keywords.columns = ['Keywords']
+    index_keywords = index_keywords.loc[index_keywords['Keywords'] != 'nan']
     index_keywords['Count'] = 1
     index_keywords = index_keywords.groupby('Keywords').count().sort_values(by='Count', ascending=False).reset_index()
     return index_keywords
